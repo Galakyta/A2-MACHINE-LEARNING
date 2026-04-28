@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 
 # Carregar dados originais para gerar os nomes das colunas pra one hot
-dados_originais = pd.read_csv("ObesityDataSet_.csv")
+dados_originais = pd.read_csv("ObesityDataSet_raw_and_data_sinthetic.csv")
 colunas_numericas = ['Age', 'Height', 'Weight', 'FCVC', 'NCP', 'CH2O', 'FAF', 'TUE']
 colunas_categoricas = ['Gender', 'family_history_with_overweight', 'FAVC', 'CAEC', 'SMOKE', 'SCC', 'CALC', 'MTRANS', 'NObeyesdad']
 
@@ -23,11 +23,10 @@ def inferir_paciente(dados_numericos, dados_categoricos):
     df_num = pd.DataFrame([dados_numericos])
     df_num_scaled = Scaler.transform(df_num)
     df_num_scaled = pd.DataFrame(df_num_scaled, columns=colunas_numericas)
-    
     #aqui faz os categoricos
     df_cat = pd.DataFrame([dados_categoricos])
     df_cat_onehot = pd.get_dummies(df_cat)
-    
+
    #isso aq é pra garantir q todas as colunas existam na hora de fazer o one hot
     #acabei de lembrar que eu pesquisei qq era cat, e qq tinha a ver com gato quando vi isso a primeira vez
     #mas era só a categoria
@@ -39,8 +38,7 @@ def inferir_paciente(dados_numericos, dados_categoricos):
     cluster = Cluster.predict(paciente_completo)
     
     return cluster[0] + 1
-
-
+#aq eu peguei direto do da descricao e simplesmente fiz um que na teoria deve cair ctz no cluster 10
 dados_num = {
     'Age': 21.0,
     'Height': 1.62,
@@ -51,7 +49,6 @@ dados_num = {
     'FAF': 0.0,
     'TUE': 1.0
 }
-
 dados_cat = {
     'Gender': 'Female',
     'family_history_with_overweight': 'yes',
@@ -63,6 +60,7 @@ dados_cat = {
     'MTRANS': 'Public_Transportation',
     'NObeyesdad': 'Normal_Weight'
 }
-
 cluster_paciente = inferir_paciente(dados_num, dados_cat)
-print(f"Cluster do paciente: {cluster_paciente}")
+print(f"cluster do paciente = {cluster_paciente}")
+#Cluster do paciente: 10
+#CAIU NO 10
