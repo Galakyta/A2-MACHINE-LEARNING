@@ -7,28 +7,31 @@ import pickle # pra salvar tudo
 '''ERROR: Could not install packages due to an OSError: [WinError 5] Acesso negado: ''
 Consider using the `--user` option or check the permissions.
 '''
-import math, numpy as np # pra operacoes matematicas
+import math, numpy as np # pra usar na hora de aplicar o codigo de otimizacao de clusters
+#primeira coisa q eu fiz foi ler a documentacao do csv, e meu deus do ceu vc judiou da gente 2k de row
 #907543
 dados = pd.read_csv("ObesityDataSet_raw_and_data_sinthetic.csv")
-#sempre importante copiar o relative path, como eu to fazendo agora
-#pouco importa, mas eu peguei o costume de anotar isso enquanto estudava
-
-#agora, ja da pra instanciar as nossas ferramentas de trabalho, que nese caso vai ser o scaler
+#sempre importante copiar o relative path, como eu to fazendo agora, msm que de na mesma pq tem so 1 pasta aq eu prefiro, pq mo medo de ferrar tudo
+#por diretorio, que e um habito terrivel meu
+#e tudo bem pouco importa, mas eu peguei o costume de anotar isso enquanto estudava
+#agora, ja da pra instanciar as nossas ferramentas de trabalho, que nese caso vai ser o scaler, infelizmente n vo poder usar o inputer mesmo
+#tendo me afeicoado por ele
 
 Scaler = MinMaxScaler()
 
 #agora que o nosso csv ta ingerido, a gente pode começar a tratar ele
 '''Gender,Age,Height,Weight,family_history_with_overweight,FAVC,FCVC,NCP,CAEC,SMOKE,CH2O,SCC,FAF,TUE,CALC,MTRANS,NObeyesdad
 Female,21,1.62,64,yes,no,2,3,Sometimes,no,2,no,0,1,no,Public_Transportation,Normal_Weight'''
-#aqui a gente ja pega o nosso target, pq a gente precisa droppar ele
+#aqui eu ja me liguei de droppar o target q é algo q eu geralmente esqueço, mas aqui vai ser importante ja que se eu deixar ele ali vai inflar
+# e muito a acuracia de um jeito artificial, q eu notei antes mas nn achei nada nos meus outros codigos de estudo, mas a lanna me corrigiu ent suave
 
-colunas_para_dropar_categoricos = [
+
+colunas_para_dropar_categoricos = [ #eu prefiro sempre separar as colunas antes de droppar pra visualizar, depois eu deixo do nojo que eu quiser
+    #mas nessa hora eu prefiro visualizar
     "Gender", "family_history_with_overweight", "FAVC",
     "CAEC", "SMOKE", "SCC", "CALC", "MTRANS", "NObeyesdad"
 ]
-
 dados_numericos = dados.drop(columns=colunas_para_dropar_categoricos)
-
 # e agora podemos normalizar esses dados, mas ants vamos treinar
 Scaler_Treinado = Scaler.fit(dados_numericos)
 #ja aproveito pra salvar o meu scaler treinado, seguindo o .pkl por bons costumes
@@ -135,8 +138,8 @@ numero_clusters_otimo = K[distancias.index(np.max(distancias))]
 print("numero de clusters mais melhor: ", numero_clusters_otimo)
 #sim mais melhor de proposito
 
+#credo djo que ta tudo certo ent vo partir
+#brigado por liberar pra fazer com 500 ao inves de 2k no kmeans se nn eu ia ficar aq ate amanha
 cluster_OBS = KMeans(n_clusters=numero_clusters_otimo, random_state=42).fit(Dados_Normalizados)
-
 print(cluster_OBS)
-
 pickle.dump(cluster_OBS, open("cluster_OBS.pkl", 'wb'))

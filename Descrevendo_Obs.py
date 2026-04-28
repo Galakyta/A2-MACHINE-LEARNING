@@ -50,16 +50,24 @@ dados_num = pd.DataFrame(dados_num, columns=dados_numericos_normalizados.columns
 
 categorias_resultado = []
 
+#a partir daqui vc pode se perguntar pq eu simplesmente n aprendi a usar o fromdummies direito, a resposta é simples
+#pq preguicoso trabalha duas vezes, mas pelo menos meu codigo ficou melhor nas proximas vzs
+#resumindo eu nn gosto de usar dummies, em geral mesmo, e isso aqui é um jeito bem mais chato de fazer
+#mas que vai coluna por coluna apendando, que ate pode ser meio desnecessario , mas eu goto de como ficou 
+
 for indice in range(len(centroides)):
-    categorias_de_cluster = []
-    pos = 0
+    categorias_de_cluster = [] 
+    pos = 0 #a nossa posicao
     for col in colunas_categoricas_sem_target:
+            #pra passar um rodo nas colunas
         n = len(sorted(dados_originais[col].unique()))
-        cat_idx = np.argmax(dados_categoricos_normalizados.iloc[indice, pos:pos+n])
+        cat_idx = np.argmax(dados_categoricos_normalizados.iloc[indice, pos:pos+n])#cat idx é o categoria mais indice pra ficar claro
         categorias_de_cluster.append(sorted(dados_originais[col].unique())[cat_idx])
         pos += n
     categorias_resultado.append(", ".join(categorias_de_cluster))
 dados_cat = pd.DataFrame(categorias_resultado, columns=['Class'])
+
+
 
 #ok alguns detalhes importantes, inicialmente na hora da descrição. não tem como a gente saber pra qual cluster cada dado categorico ira pertencer, mas vale lembrar que a gente deu um int pra cada um deles no treinamento
 #com o asntype, com isso agora a gente pode reverter o processo, round 0 vai fazer todo mundo ir ou pra 0, ou pra 1, nesse caso o maior valor vira 1, e o resto 0, como se fosse uma eleição ou leilão pra ver qual dado

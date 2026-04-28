@@ -1,49 +1,68 @@
 import pandas as pd
 import pickle
 import numpy as np
-#finalmente a gente chega na parte de inferencia, que é na verdade talvez a parte realmente mais pratica e "util" quando você quer usar dados em cluster, que é além de apenas classificar pessoas ou qualquer coisa em grupos
-#tambem conseguir pegar um individuo ou objeto novo, e classificar ele dentro dos seus dados, mas isso é até bem simples de fazer
-#pra começar a gente vai precisar de um dataframe vazio, mas que tenha a mesma estrutura que a dos nossos centroides.
 
-# Carregar dados originais para gerar os nomes das colunas one-hot
+# Carregar dados originais para gerar os nomes das colunas pra one hot
 dados_originais = pd.read_csv("ObesityDataSet_.csv")
 colunas_numericas = ['Age', 'Height', 'Weight', 'FCVC', 'NCP', 'CH2O', 'FAF', 'TUE']
 colunas_categoricas = ['Gender', 'family_history_with_overweight', 'FAVC', 'CAEC', 'SMOKE', 'SCC', 'CALC', 'MTRANS', 'NObeyesdad']
-#eu taria chamando isso aqui de estrutura do zumano a ser classificado, mas esse dataset fico gande de mais ent eu vo me perder
-#se continuar nomeando igual uma besta
 
-
-#mesmo codigo que eu ja tinha usado anteriormente, nada de mais tmb
-nomes_pra_one_quente = []
+nomes_pra_one_quente = [] #como eu a tinha dito anteriormente, eu ja tinho isso pronto entao nada de mais para comentar
 for col in colunas_categoricas:
     for cat in sorted(dados_originais[col].unique()):
         nomes_pra_one_quente.append(f"{col}_{cat}")
 
+#simplesmente mais estrutura
 nomes_das_colunas = colunas_numericas + nomes_pra_one_quente
-
 Estrutura_De_Pessoa_Classificada = pd.DataFrame(columns=nomes_das_colunas)
-#pra isso aqui a gente só quer a estrutura pra servir de template pro que a gente for passar como nova pessoa a ser classificada
-
-#aqui vem a outra parte importante da gente ter salvado os nossos pkls, a gente precisa normalizar as pessoas novas antes de classificar, porque elas precisam passar pelo scanner exatamente da mesma forma que a gente
-#fez com os dados originais, a gente não vai repetir o kmeans pois a gente ja tem o nosso modelo treinado
-#o nosso modelo treinado que vai fazer uma previsao de a qual cluster a nova pessoa pertence
-# logo a gente loada o nosso normalizador, e depois o nosso cluster ja treinado
+#eu sei q a nomeclatura ta confusa mas confia
 Scaler = pickle.load(open('Scaler_Treinado_OBS.pkl', 'rb'))
 Cluster = pickle.load(open('cluster_OBS.pkl', 'rb'))
+def inferir_paciente(dados_numericos, dados_categoricos):
+    #aqui cria os dados numericos pro paciente
+    df_num = pd.DataFrame([dados_numericos])
+    df_num_scaled = Scaler.transform(df_num)
+    df_num_scaled = pd.DataFrame(df_num_scaled, columns=colunas_numericas)
+    
+    #aqui faz os categoricos
+    df_cat = pd.DataFrame([dados_categoricos])
+    df_cat_onehot = pd.get_dummies(df_cat)
+    
+   #isso aq é pra garantir q todas as colunas existam na hora de fazer o one hot
+    #acabei de lembrar que eu pesquisei qq era cat, e qq tinha a ver com gato quando vi isso a primeira vez
+    #mas era só a categoria
+    for col in nomes_pra_one_quente:
+        if col not in df_cat_onehot.columns:
+            df_cat_onehot[col] = 0
+    df_cat_onehot = df_cat_onehot[nomes_pra_one_quente]
+    paciente_completo = pd.concat([df_num_scaled, df_cat_onehot], axis=1)
+    cluster = Cluster.predict(paciente_completo)
+    
+    return cluster[0] + 1
 
-#pra testar eu vou fazer uma amostra nova viciada me baseando no que a gente ja fez no descrevendo centroides
-# Valores de exemplo baseados no cluster que vimos anteriormente
-Nova_Pessoa = pd.DataFrame([[21.0, 1.62, 64.0, 2.0, 3.0, 2.0, 0.0, 1.0]], columns=colunas_numericas)
 
-Nova_Pessoa = Scaler.transform(Nova_Pessoa)
-#A gennte retifica esses dados com o scaler
+dados_num = {
+    'Age': 21.0,
+    'Height': 1.62,
+    'Weight': 64.0,
+    'FCVC': 2.0,
+    'NCP': 3.0,
+    'CH2O': 2.0,
+    'FAF': 0.0,
+    'TUE': 1.0
+}
 
-#agora que ela ta normalizada, é só transformar em um dataframe de novo
-Nova_Pessoa = pd.DataFrame(Nova_Pessoa, columns=colunas_numericas)
+dados_cat = {
+    'Gender': 'Female',
+    'family_history_with_overweight': 'yes',
+    'FAVC': 'no',
+    'CAEC': 'Sometimes',
+    'SMOKE': 'no',
+    'SCC': 'no',
+    'CALC': 'no',
+    'MTRANS': 'Public_Transportation',
+    'NObeyesdad': 'Normal_Weight'
+}
 
-#agora a gente pode concatenar os dois dataframes, formando a estrutura perfeita pra usar o predict
-Nova_Pessoa_Scalada = pd.concat([Nova_Pessoa, Estrutura_De_Pessoa_Classificada]).fillna(0) # esse fill na serve pra transformar em 0 qualquer valor nulo passado, que forma a nossa tabela de one hot pros categoricos
-
-#agora finalmente a gente pode descobrir aonde essa pessoa cai
-cluster_da_nova_pessoa = Cluster.predict(Nova_Pessoa_Scalada)
-print(f"cluster da nova pessoa: {cluster_da_nova_pessoa[0] + 1}")  # +1 para ficar de 1 a 81
+cluster_paciente = inferir_paciente(dados_num, dados_cat)
+print(f"Cluster do paciente: {cluster_paciente}")
