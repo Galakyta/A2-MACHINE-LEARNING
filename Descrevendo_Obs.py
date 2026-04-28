@@ -49,7 +49,6 @@ dados_num = pd.DataFrame(dados_num, columns=dados_numericos_normalizados.columns
 #em seguida a gente desfaz o get dummies, e finalmente enquadra os clusters em alguma classificacao categorica
 
 categorias_resultado = []
-
 #a partir daqui vc pode se perguntar pq eu simplesmente n aprendi a usar o fromdummies direito, a resposta é simples
 #pq preguicoso trabalha duas vezes, mas pelo menos meu codigo ficou melhor nas proximas vzs
 #resumindo eu nn gosto de usar dummies, em geral mesmo, e isso aqui é um jeito bem mais chato de fazer
@@ -66,9 +65,6 @@ for indice in range(len(centroides)):
         pos += n
     categorias_resultado.append(", ".join(categorias_de_cluster))
 dados_cat = pd.DataFrame(categorias_resultado, columns=['Class'])
-
-
-
 #ok alguns detalhes importantes, inicialmente na hora da descrição. não tem como a gente saber pra qual cluster cada dado categorico ira pertencer, mas vale lembrar que a gente deu um int pra cada um deles no treinamento
 #com o asntype, com isso agora a gente pode reverter o processo, round 0 vai fazer todo mundo ir ou pra 0, ou pra 1, nesse caso o maior valor vira 1, e o resto 0, como se fosse uma eleição ou leilão pra ver qual dado
 #categorico fica com cada cluster, exemplo: pra um dos clusters tem os seguintes valores: setosa 0,8 versicolor 0,2 e virginica 0,3 // esses valores são os valores predominantes nos centroides, então o maior vira 1 e o resto 0
